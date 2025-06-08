@@ -1,4 +1,4 @@
-# Vítězslav Kříž
+# Aleš Makula
 ---
 ## Zvolené rozšíření
 - Popisek
