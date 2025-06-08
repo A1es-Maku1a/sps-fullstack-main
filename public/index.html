@@ -1,0 +1,863 @@
+<!DOCTYPE html>
+<html lang="cs">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Správa Fitness Centra</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            background-color: #333;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        nav {
+            display: flex;
+            margin-bottom: 20px;
+        }
+        
+        nav button {
+            flex: 1;
+            padding: 10px;
+            background-color: #b4b4b4;
+            border: none;
+            cursor: pointer;
+        }
+        
+        nav button.active {
+            background-color: #4CAF50;
+            color: white;
+        }
+        
+        form {
+            margin-bottom: 20px;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+        }
+        
+        form div {
+            margin-bottom: 10px;
+        }
+        
+        input, textarea, select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #585858;
+        }
+        
+        .section {
+            display: none;
+        }
+        
+        .section.active {
+            display: block;
+        }
+        
+        ul {
+            list-style-type: none;
+            padding: 0;
+        }
+        
+        li {
+            border: 1px solid #ddd;
+            margin-bottom: 10px;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .actions {
+            display: flex;
+            gap: 5px;
+        }
+
+        .detail-view {
+            border: 1px solid #ddd;
+            padding: 20px;
+            margin-bottom: 20px;
+            display: none;
+        }
+        
+        .detail-view h3 {
+            margin-top: 0;
+        }
+        
+        .detail-view .related-items {
+            margin-top: 20px;
+        }
+        
+        .detail-view .related-items h4 {
+            margin-bottom: 10px;
+        }
+        
+        .detail-view .related-items ul {
+            padding-left: 20px;
+        }
+
+        .edit-member-form {
+            display: none;
+        }
+
+        .edit-plan-form {
+            display: none;
+        }
+
+        .refresh-button {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 20px 0;
+            min-width: 120px;
+        }
+
+        .refresh-button:hover {
+            background-color: #45a049;
+        }
+
+        .refresh-icon {
+            width: 16px;
+            height: 16px;
+            border: 2px solid white;
+            border-top: 2px solid transparent;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Správa Fitness Centra</h1>
+    </header>
+    
+    <nav>
+        <button id="members-tab">Členové</button>
+        <button id="workout-plans-tab">Cvičební plány</button>
+        <button id="assignments-tab" class="active">Přiřazení plánů</button>
+    </nav>
+    
+    <!-- SEKCE ČLENŮ -->
+    <div id="members-section" class="section">
+        <h2>Správa členů</h2>
+        
+        <!-- Formulář pro přidání člena -->
+        <form id="member-form">
+            <h3>Přidat nového člena</h3>
+            <div>
+                <label for="member-firstname">Jméno:</label>
+                <input type="text" id="member-firstname" name="firstname" required>
+            </div>
+            <div>
+                <label for="member-lastname">Příjmení:</label>
+                <input type="text" id="member-lastname" name="lastname" required>
+            </div>
+            <div>
+                <button type="submit">Přidat člena</button>
+            </div>
+        </form>
+
+        <!-- Seznam členů -->
+        <h3>Seznam členů</h3>
+        <ul id="members-list">
+            <!-- Zde se budou zobrazovat členové -->
+        </ul>
+    </div>
+    
+    <!-- SEKCE CVIČEBNÍ PLÁNY -->
+    <div id="workout-plans-section" class="section">
+        <h2>Správa cvičebních plánů</h2>
+        
+        <!-- Formulář pro přidání plánu -->
+        <form id="workout-plan-form">
+            <h3>Přidat nový cvičební plán</h3>
+            <div>
+                <label for="plan-name">Název plánu:</label>
+                <input type="text" id="plan-name" name="name" required>
+            </div>
+            <div>
+                <label for="plan-description">Popis plánu:</label>
+                <textarea id="plan-description" name="description"></textarea>
+            </div>
+            <div>
+                <button type="submit">Přidat plán</button>
+            </div>
+        </form>
+        
+        <!-- Detail plánu -->
+        <div id="workout-plan-detail" class="detail-view">
+            <h3 id="workout-plan-detail-name"></h3>
+            <div class="related-items">
+                <h4>Přiřazení členů:</h4>
+                <ul id="workout-plan-detail-members"></ul>
+            </div>
+            <button id="workout-plan-detail-close">Zavřít</button>
+        </div>
+        
+        <!-- Seznam plánů -->
+        <h3>Seznam cvičebních plánů</h3>
+        <ul id="workout-plans-list">
+            <!-- Zde se budou zobrazovat plány -->
+        </ul>
+    </div>
+    
+    <!-- SEKCE PŘIŘAZENÍ PLÁNŮ -->
+    <div id="assignments-section" class="section active">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h2 style="margin: 0;">Správa přiřazení plánů</h2>
+            <button id="refresh-page-btn" class="refresh-button" style="margin: 0;">
+                <span>Obnovit</span>
+                <div class="refresh-icon"></div>
+            </button>
+        </div>
+        
+        <!-- Formulář pro přiřazení plánu -->
+        <form id="assignment-form">
+            <h3>Přiřadit plán členovi</h3>
+            <div>
+                <label for="assignment-member">Člen:</label>
+                <select id="assignment-member" name="member" required>
+                    <option value="">--Vyberte člena--</option>
+                </select>
+            </div>
+            <div>
+                <label for="assignment-plan">Cvičební plán:</label>
+                <select id="assignment-plan" name="plan" required>
+                    <option value="">--Vyberte plán--</option>
+                </select>
+            </div>
+            <div>
+                <button type="submit">Přiřadit plán</button>
+            </div>
+        </form>
+
+        <!-- Seznam přiřazení -->
+        <h3>Seznam přiřazení plánů</h3>
+        <ul id="assignments-list">
+            <!-- Zde se budou zobrazovat přiřazení -->
+        </ul>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            loadMembers();
+            loadWorkoutPlans();
+            loadAssignments();
+            updateAssignmentOptions();
+        });
+
+        // Tlačítko pro obnovení stránky
+        document.getElementById('refresh-page-btn').addEventListener('click', () => {
+            location.reload();
+        });
+
+        // Přidání nového člena
+        document.getElementById('member-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const firstname = document.getElementById('member-firstname').value;
+            const lastname = document.getElementById('member-lastname').value;
+            try {
+                const response = await fetch('/api/members', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ firstname, lastname })
+                });
+                if (response.ok) {
+                    document.getElementById('member-form').reset();
+                    loadMembers();
+                    // Aktualizace dropdown seznamů pro přiřazení
+                    updateAssignmentOptions();
+                } else {
+                    const error = await response.json();
+                    alert('Chyba: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Chyba:', error);
+            }
+        });
+
+        // Načtení všech členů
+        async function loadMembers() {
+            try {
+                const response = await fetch('/api/members');
+                const members = await response.json();
+                const membersList = document.getElementById('members-list');
+                membersList.innerHTML = '';
+                members.forEach(member => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div>
+                            <strong>${member.firstname} ${member.lastname}</strong>
+                        </div>
+                        <div class="actions">
+                            <button class="edit-member-btn" data-id="${member.id}">Upravit</button>
+                            <button class="delete-member-btn" data-id="${member.id}">Smazat</button>
+                        </div>
+                        <form class="edit-member-form" data-id="${member.id}">
+                            <input type="text" class="edit-member-firstname" value="${member.firstname}" required>
+                            <input type="text" class="edit-member-lastname" value="${member.lastname}" required>
+                            <button type="submit">Uložit</button>
+                            <button type="button" class="cancel-member-btn">Zrušit</button>
+                        </form>
+                    `;
+                    membersList.appendChild(li);
+                });
+
+                // Přidání event listenerů pro tlačítka
+                document.querySelectorAll('.edit-member-btn').forEach(btn => {
+                    btn.addEventListener('click', showEditMemberForm);
+                });
+                document.querySelectorAll('.delete-member-btn').forEach(btn => {
+                    btn.addEventListener('click', deleteMember);
+                });
+                document.querySelectorAll('.edit-member-form').forEach(form => {
+                    form.addEventListener('submit', updateMember);
+                });
+                document.querySelectorAll('.cancel-member-btn').forEach(btn => {
+                    btn.addEventListener('click', hideEditMemberForm);
+                });
+            } catch (error) {
+                console.error('Chyba při načítání členů:', error);
+            }
+        }
+
+        // Zobrazení formuláře pro úpravu člena
+        function showEditMemberForm(e) {
+            const id = e.target.dataset.id;
+            const li = e.target.closest('li');
+            li.querySelector('.actions').style.display = 'none';
+            li.querySelector('div:first-child').style.display = 'none';
+            li.querySelector('.edit-member-form').style.display = 'block';
+        }
+
+        // Skrytí formuláře pro úpravu člena
+        function hideEditMemberForm(e) {
+            const li = e.target.closest('li');
+            li.querySelector('.actions').style.display = 'flex';
+            li.querySelector('div:first-child').style.display = 'block';
+            li.querySelector('.edit-member-form').style.display = 'none';
+        }
+
+        // Aktualizace člena
+        async function updateMember(e) {
+            e.preventDefault();
+            const id = e.target.dataset.id;
+            const firstname = e.target.querySelector('.edit-member-firstname').value;
+            const lastname = e.target.querySelector('.edit-member-lastname').value;
+            
+            try {
+                const response = await fetch(`/api/members/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ firstname, lastname })
+                });
+                
+                if (response.ok) {
+                    loadMembers();
+                } else {
+                    const error = await response.json();
+                    alert('Chyba: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Chyba:', error);
+            }
+        }
+
+        // Smazání člena
+        async function deleteMember(e) {
+            const id = e.target.dataset.id;
+            if (confirm('Opravdu chcete smazat tohoto člena?')) {
+                try {
+                    const response = await fetch(`/api/members/${id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        loadMembers();
+                    } else {
+                        const error = await response.json();
+                        alert('Chyba: ' + error.error);
+                    }
+                } catch (error) {
+                    console.error('Chyba:', error);
+                }
+            }
+        }
+
+        // Přidání nového cvičebního plánu
+        document.getElementById('workout-plan-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('plan-name').value;
+            const description = document.getElementById('plan-description').value;
+            try {
+                const response = await fetch('/api/workout-plans', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description })
+                });
+                if (response.ok) {
+                    document.getElementById('workout-plan-form').reset();
+                    loadWorkoutPlans();
+                    // Aktualizace dropdown seznamů pro přiřazení
+                    updateAssignmentOptions();
+                } else {
+                    const error = await response.json();
+                    alert('Chyba: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Chyba:', error);
+            }
+        });
+
+        // Zavření detailu plánu
+        document.getElementById('workout-plan-detail-close').addEventListener('click', () => {
+            document.getElementById('workout-plan-detail').style.display = 'none';
+        });
+
+        // Načtení všech cvičebních plánů
+        async function loadWorkoutPlans() {
+            try {
+                const response = await fetch('/api/workout-plans');
+                const plans = await response.json();
+                const plansList = document.getElementById('workout-plans-list');
+                plansList.innerHTML = '';
+                plans.forEach(plan => {
+                    const li = document.createElement('li');
+                    li.innerHTML = `
+                        <div>
+                            <strong>${plan.name}</strong>
+                            <p>${plan.description || ''}</p>
+                        </div>
+                        <div class="actions">
+                            <button class="view-plan-btn" data-id="${plan.id}">Zobrazit všechny členy</button>
+                            <button class="edit-plan-btn" data-id="${plan.id}">Upravit</button>
+                            <button class="delete-plan-btn" data-id="${plan.id}">Smazat</button>
+                        </div>
+                        <form class="edit-plan-form" data-id="${plan.id}">
+                            <input type="text" class="edit-plan-name" value="${plan.name}" required>
+                            <textarea class="edit-plan-description">${plan.description || ''}</textarea>
+                            <button type="submit">Uložit</button>
+                            <button type="button" class="cancel-plan-btn">Zrušit</button>
+                        </form>
+                    `;
+                    plansList.appendChild(li);
+                });
+
+                // Přidání event listenerů pro tlačítka
+                document.querySelectorAll('.view-plan-btn').forEach(btn => {
+                    btn.addEventListener('click', viewWorkoutPlan);
+                });
+                document.querySelectorAll('.edit-plan-btn').forEach(btn => {
+                    btn.addEventListener('click', showEditPlanForm);
+                });
+                document.querySelectorAll('.delete-plan-btn').forEach(btn => {
+                    btn.addEventListener('click', deleteWorkoutPlan);
+                });
+                document.querySelectorAll('.edit-plan-form').forEach(form => {
+                    form.addEventListener('submit', updateWorkoutPlan);
+                });
+                document.querySelectorAll('.cancel-plan-btn').forEach(btn => {
+                    btn.addEventListener('click', hideEditPlanForm);
+                });
+            } catch (error) {
+                console.error('Chyba při načítání plánů:', error);
+            }
+        }
+
+        // Zobrazení detailu plánu
+        async function viewWorkoutPlan(e) {
+            const id = e.target.dataset.id;
+            try {
+                const response = await fetch(`/api/workout-plans/${id}`);
+                if (response.ok) {
+                    const plan = await response.json();
+                    document.getElementById('workout-plan-detail-name').textContent = plan.name;
+                    document.getElementById('workout-plan-detail-members').innerHTML = '';
+                    plan.members.forEach(member => {
+                        const li = document.createElement('li');
+                        li.textContent = `${member.firstname} ${member.lastname}`;
+                        document.getElementById('workout-plan-detail-members').appendChild(li);
+                    });
+                    document.getElementById('workout-plan-detail').style.display = 'block';
+                } else {
+                    alert('Plán nebyl nalezen');
+                }
+            } catch (error) {
+                console.error('Chyba:', error);
+            }
+        }
+
+        // Zobrazení formuláře pro úpravu plánu
+        function showEditPlanForm(e) {
+            const id = e.target.dataset.id;
+            const li = e.target.closest('li');
+            li.querySelector('.actions').style.display = 'none';
+            li.querySelector('div:first-child').style.display = 'none';
+            li.querySelector('.edit-plan-form').style.display = 'block';
+        }
+
+        // Skrytí formuláře pro úpravu plánu
+        function hideEditPlanForm(e) {
+            const li = e.target.closest('li');
+            li.querySelector('.actions').style.display = 'flex';
+            li.querySelector('div:first-child').style.display = 'block';
+            li.querySelector('.edit-plan-form').style.display = 'none';
+        }
+
+        // Aktualizace plánu
+        async function updateWorkoutPlan(e) {
+            e.preventDefault();
+            const id = e.target.dataset.id;
+            const name = e.target.querySelector('.edit-plan-name').value;
+            const description = e.target.querySelector('.edit-plan-description').value;
+            
+            try {
+                const response = await fetch(`/api/workout-plans/${id}`, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, description })
+                });
+                
+                if (response.ok) {
+                    loadWorkoutPlans();
+                } else {
+                    const error = await response.json();
+                    alert('Chyba: ' + error.error);
+                }
+            } catch (error) {
+                console.error('Chyba:', error);
+            }
+        }
+
+        // Smazání plánu
+        async function deleteWorkoutPlan(e) {
+            const id = e.target.dataset.id;
+            if (confirm('Opravdu chcete smazat tento plán?')) {
+                try {
+                    const response = await fetch(`/api/workout-plans/${id}`, {
+                        method: 'DELETE'
+                    });
+                    
+                    if (response.ok) {
+                        loadWorkoutPlans();
+                    } else {
+                        const error = await response.json();
+                        alert('Chyba: ' + error.error);
+                    }
+                } catch (error) {
+                    console.error('Chyba:', error);
+                }
+            }
+        }
+
+        // Přidání přiřazení plánu
+        document.getElementById('assignment-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const memberId = document.getElementById('assignment-member').value;
+            const planId = document.getElementById('assignment-plan').value;
+
+            try {
+                const response = await fetch('/api/assignments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ memberId, planId })
+                });
+
+                if (response.ok) {
+                    document.getElementById('assignment-form').reset();
+                    loadAssignments();
+                } else {
+                    const errorText = await response.text();
+                    try {
+                        const error = JSON.parse(errorText);
+                        alert('Chyba: ' + error.error);
+                    } catch (e) {
+                        alert('Chyba: ' + errorText);
+                    }
+                }
+            } catch (error) {
+                console.error('Chyba:', error);
+            }
+        });
+
+        // Načtení všech přiřazení
+        async function loadAssignments() {
+            try {
+                const response = await fetch('/api/assignments');
+
+                if (response.ok) {
+                    const assignments = await response.json();
+                    
+                    const assignmentsList = document.getElementById('assignments-list');
+                    assignmentsList.innerHTML = '';
+                    
+                    assignments.forEach(assignment => {
+                        const li = document.createElement('li');
+                        li.innerHTML = `
+                            <div>
+                                <strong>${assignment.member.firstname} ${assignment.member.lastname}</strong> -
+                                <span>${assignment.plan.name}</span>
+                            </div>
+                            <div class="actions">
+                                <button class="edit-assignment-btn" data-id="${assignment.id}" data-member-id="${assignment.member.id}" data-plan-id="${assignment.plan.id}">Upravit</button>
+                                <button class="delete-assignment-btn" data-id="${assignment.id}">Smazat</button>
+                            </div>
+                            <form class="edit-assignment-form" data-id="${assignment.id}" style="display: none;">
+                                <select class="edit-assignment-member" required>
+                                    <option value="">Vyberte člena</option>
+                                </select>
+                                <select class="edit-assignment-plan" required>
+                                    <option value="">Vyberte plán</option>
+                                </select>
+                                <button type="submit">Uložit</button>
+                                <button type="button" class="cancel-assignment-btn">Zrušit</button>
+                            </form>
+                        `;
+                        assignmentsList.appendChild(li);
+                    });
+                    
+                    // Přidání event listenerů pro tlačítka
+                    document.querySelectorAll('.edit-assignment-btn').forEach(btn => {
+                        btn.addEventListener('click', showEditAssignmentForm);
+                    });
+                    document.querySelectorAll('.delete-assignment-btn').forEach(btn => {
+                        btn.addEventListener('click', deleteAssignment);
+                    });
+                    document.querySelectorAll('.edit-assignment-form').forEach(form => {
+                        form.addEventListener('submit', updateAssignment);
+                    });
+                    document.querySelectorAll('.cancel-assignment-btn').forEach(btn => {
+                        btn.addEventListener('click', hideEditAssignmentForm);
+                    });
+
+                    // Naplnění dropdown seznamů v edit formulářích
+                    await populateEditAssignmentForms();
+                } else {
+                    const errorText = await response.text();
+                    throw new Error(errorText);
+                }
+            } catch (error) {
+                console.error('Chyba při načítání přiřazení:', error);
+            }
+        }
+
+        // Smazání přiřazení
+        async function deleteAssignment(e) {
+            const id = e.target.dataset.id;
+            if (confirm('Opravdu chcete smazat toto přiřazení?')) {
+                try {
+                    const response = await fetch(`/api/assignments/${id}`, {
+                        method: 'DELETE'
+                    });
+
+                    if (response.ok) {
+                        loadAssignments();
+                    } else {
+                        const errorText = await response.text();
+                        try {
+                            const error = JSON.parse(errorText);
+                            alert('Chyba: ' + error.error);
+                        } catch (e) {
+                            alert('Chyba: ' + errorText);
+                        }
+                    }
+                } catch (error) {
+                    console.error('Chyba:', error);
+                }
+            }
+        }
+
+        // Zobrazení formuláře pro úpravu přiřazení
+        async function showEditAssignmentForm(e) {
+            const li = e.target.closest('li');
+            const memberId = e.target.dataset.memberId;
+            const planId = e.target.dataset.planId;
+
+            // Skrytí původního obsahu a zobrazení formuláře
+            li.querySelector('div:first-child').style.display = 'none';
+            li.querySelector('.actions').style.display = 'none';
+            li.querySelector('.edit-assignment-form').style.display = 'block';
+
+            // Nastavení aktuálních hodnot v dropdown seznamech
+            const memberSelect = li.querySelector('.edit-assignment-member');
+            const planSelect = li.querySelector('.edit-assignment-plan');
+            memberSelect.value = memberId;
+            planSelect.value = planId;
+        }
+
+        // Skrytí formuláře pro úpravu přiřazení
+        function hideEditAssignmentForm(e) {
+            const li = e.target.closest('li');
+            li.querySelector('div:first-child').style.display = 'block';
+            li.querySelector('.actions').style.display = 'flex';
+            li.querySelector('.edit-assignment-form').style.display = 'none';
+        }
+
+        // Aktualizace přiřazení
+        async function updateAssignment(e) {
+            e.preventDefault();
+            const id = e.target.dataset.id;
+            const memberId = e.target.querySelector('.edit-assignment-member').value;
+            const planId = e.target.querySelector('.edit-assignment-plan').value;
+
+            if (!memberId || !planId) {
+                alert('Musíte vybrat člena i plán');
+                return;
+            }
+
+            try {
+                // Nejprve smažeme staré přiřazení
+                const deleteResponse = await fetch(`/api/assignments/${id}`, {
+                    method: 'DELETE'
+                });
+
+                if (!deleteResponse.ok) {
+                    throw new Error('Chyba při mazání starého přiřazení');
+                }
+
+                // Pak vytvoříme nové přiřazení
+                const createResponse = await fetch('/api/assignments', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ memberId, planId })
+                });
+
+                if (createResponse.ok) {
+                    loadAssignments();
+                } else {
+                    const errorText = await createResponse.text();
+                    try {
+                        const error = JSON.parse(errorText);
+                        alert('Chyba: ' + error.error);
+                    } catch (e) {
+                        alert('Chyba: ' + errorText);
+                    }
+                }
+            } catch (error) {
+                console.error('Chyba:', error);
+                alert('Chyba při aktualizaci přiřazení');
+            }
+        }
+
+        // Naplnění dropdown seznamů v edit formulářích
+        async function populateEditAssignmentForms() {
+            try {
+                const membersResponse = await fetch('/api/members');
+                const plansResponse = await fetch('/api/workout-plans');
+                const members = await membersResponse.json();
+                const plans = await plansResponse.json();
+
+                document.querySelectorAll('.edit-assignment-member').forEach(select => {
+                    const currentValue = select.value;
+                    select.innerHTML = '<option value="">Vyberte člena</option>';
+                    members.forEach(member => {
+                        const option = document.createElement('option');
+                        option.value = member.id;
+                        option.textContent = `${member.firstname} ${member.lastname}`;
+                        if (member.id == currentValue) option.selected = true;
+                        select.appendChild(option);
+                    });
+                });
+
+                document.querySelectorAll('.edit-assignment-plan').forEach(select => {
+                    const currentValue = select.value;
+                    select.innerHTML = '<option value="">Vyberte plán</option>';
+                    plans.forEach(plan => {
+                        const option = document.createElement('option');
+                        option.value = plan.id;
+                        option.textContent = plan.name;
+                        if (plan.id == currentValue) option.selected = true;
+                        select.appendChild(option);
+                    });
+                });
+            } catch (error) {
+                console.error('Chyba při načítání dat pro edit formuláře:', error);
+            }
+        }
+
+        // Aktualizace možností výběru v formuláři přiřazení
+        async function updateAssignmentOptions() {
+            try {
+                const membersResponse = await fetch('/api/members');
+                const plansResponse = await fetch('/api/workout-plans');
+                const members = await membersResponse.json();
+                const plans = await plansResponse.json();
+
+                const memberSelect = document.getElementById('assignment-member');
+                const planSelect = document.getElementById('assignment-plan');
+
+                // Vymazání existujících možností (kromě první prázdné možnosti)
+                memberSelect.innerHTML = '<option value="">Vyberte člena</option>';
+                planSelect.innerHTML = '<option value="">Vyberte plán</option>';
+
+                members.forEach(member => {
+                    const option = document.createElement('option');
+                    option.value = member.id;
+                    option.textContent = `${member.firstname} ${member.lastname}`;
+                    memberSelect.appendChild(option);
+                });
+
+                plans.forEach(plan => {
+                    const option = document.createElement('option');
+                    option.value = plan.id;
+                    option.textContent = plan.name;
+                    planSelect.appendChild(option);
+                });
+            } catch (error) {
+                console.error('Chyba při načítání možností přiřazení:', error);
+            }
+        }
+
+        // Přepínání sekci
+        document.querySelectorAll('nav button').forEach(button => {
+            button.addEventListener('click', () => {
+                const sectionId = button.id.replace('-tab', '-section');
+                document.querySelectorAll('.section').forEach(section => {
+                    section.classList.remove('active');
+                });
+                document.getElementById(sectionId).classList.add('active');
+                document.querySelectorAll('nav button').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                button.classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

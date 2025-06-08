@@ -1,0 +1,25 @@
+{
+  "name": "sps-fullstack",
+  "version": "1.0.0",
+  "description": "0: Todo list",
+  "homepage": "https://github.com/sprtokiller/sps-fullstack#readme",
+  "bugs": {
+    "url": "https://github.com/sprtokiller/sps-fullstack/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/A1es-Maku1a/sps-fullStack.git"
+  },
+  "license": "ISC",
+  "author": "Aleš Makula",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server.js",
+    "seed": "node database/seed.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "sqlite3": "^5.1.7"
+  }
+}
