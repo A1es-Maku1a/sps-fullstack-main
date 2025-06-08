@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Správa Fitness Centra
 
 Webová aplikace pro správu členů fitness centra, cvičebních plánů a jejich přiřazení.
@@ -70,3 +71,15 @@ Webová aplikace pro správu členů fitness centra, cvičebních plánů a jeji
 ## Autor
 
 Aleš Makula
+=======
+# Aleš Makula
+---
+## Zvolené rozšíření
+- Popisek
+- Popisek2
+---
+## Spuštění aplikace
+
+- Popisek
+- Popisek2
+>>>>>>> 058a50b7eeafefa1cb4e3a244324b197d9f82712
